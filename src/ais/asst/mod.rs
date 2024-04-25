@@ -1,4 +1,4 @@
-use async_openai::types::{AssistantObject, AssistantToolsRetrieval, CreateAssistantRequest};
+use async_openai::types::{AssistantObject, AssistantToolsRetrieval, CreateAssistantRequest, ModifyAssistantRequest};
 use derive_more::{Deref, Display, From};
 
 use crate::Result;
@@ -76,6 +76,17 @@ pub async fn first_by_name(oac: &OaClient, name: &str) -> Result<Option<Assistan
         .find(|a| a.name.as_ref().map(|n| n == name).unwrap_or(false));
 
     Ok(asst_obj)
+}
+
+pub async fn upload_instructions(oac: &OaClient, asst_id: &AsstId, inst_contet: String) -> Result<()> {
+    let oa_assts = oac.assistants();
+    let modif = ModifyAssistantRequest {
+        instructions: Some(inst_contet),
+        ..Default::default()
+    };
+    oa_assts.update(asst_id, modif).await?;
+
+    Ok(())
 }
 
 pub async fn delete(oac: &OaClient, asst_id: &AsstId) -> Result<()> {
