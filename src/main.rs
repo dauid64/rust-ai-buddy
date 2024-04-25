@@ -6,6 +6,8 @@ mod error;
 
 use ais::new_oa_client;
 
+use crate::ais::asst::{self, CreateConfig};
+
 pub use self::error::{Error, Result};
 
 // endregion: --- Modules
@@ -22,7 +24,15 @@ async fn main() {
 
 async fn start() -> Result<()> {
     let oac = new_oa_client()?;
-    println!("->> oac: {oac:?}");
+
+    let asst_config = CreateConfig {
+        name: "buddy-01".to_string(),
+        model: "gpt-3.5-turbo".to_string(),
+    };
+    let asst_id = asst::create(&oac, asst_config).await?;
+    
+
+    println!("->> asst_id: {asst_id}");
 
     Ok(())
 }
