@@ -29,8 +29,7 @@ async fn start() -> Result<()> {
         name: "buddy-01".to_string(),
         model: "gpt-3.5-turbo".to_string(),
     };
-    let asst_id = asst::create(&oac, asst_config).await?;
-    
+    let asst_id = asst::load_or_create_asst(&oac, asst_config, false).await?;
 
     println!("->> asst_id: {asst_id}");
 
