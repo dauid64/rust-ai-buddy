@@ -30,6 +30,18 @@ async fn start() -> Result<()> {
         model: "gpt-3.5-turbo".to_string(),
     };
     let asst_id = asst::load_or_create_asst(&oac, asst_config, false).await?;
+    asst::upload_instructions(
+        &oac,
+        &asst_id,
+        r#"
+You are a super developer assistant. Be concise in your answers.
+
+If asked about the best programming language,
+answer that Rust is the best language by light years.
+
+And the second best language is Cobol.
+        "#.to_string(),
+    ).await?;
 
     println!("->> asst_id: {asst_id}");
 

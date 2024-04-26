@@ -1,16 +1,20 @@
-use async_openai::types::{
-    AssistantObject, AssistantToolsRetrieval, CreateAssistantRequest, CreateThreadRequest,
-    ModifyAssistantRequest, ThreadObject,
-};
-use derive_more::{Deref, Display, From};
+use std::{os::unix::thread, thread::Thread, time::Duration};
 
-use crate::Result;
+use async_openai::types::{
+    AssistantObject, AssistantToolsRetrieval, CreateAssistantRequest, CreateRunRequest, CreateThreadRequest, ModifyAssistantRequest, RunStatus, ThreadObject
+};
+use console::Term;
+use derive_more::{Deref, Display, From};
+use tokio::time::sleep;
+
+use crate::{ais::msg::{get_text_content, user_msg}, Result};
 
 use super::OaClient;
 
 // region --- Constants
 
 const DEFAULT_QUERY: &[(&str, &str)] = &[("limit", "100")];
+const POLLING_DURATION_MSG: u64 = 500;
 
 // endregion: --- Constants
 
@@ -132,4 +136,52 @@ pub async fn get_thread(oac: &OaClient, thread_id: &ThreadId) -> Result<ThreadOb
     Ok(thread_obj)
 }
 
+pub async fn run_thread_msg(oac: &OaClient, asst_id: &AsstId, thread_id: &ThreadId, msg: &str) -> Result<String> {
+    let msg = user_msg(msg);
+
+    let _message_obj = oac.threads().messages(thread_id).create(msg).await?;
+
+    let run_request = CreateRunRequest {
+        assistant_id: asst_id.to_string(),
+        ..Default::default()
+    };
+    let run = oac.threads().runs(thread_id).create(run_request).await?;
+
+    let term = Term::stdout();
+    loop {
+        term.write_str(">")?;
+        let run = oac.threads().runs(thread_id).retrieve(&run.id).await?;
+        term.write_str("< ")?;
+        match run.status {
+            RunStatus::Completed => {
+                term.write_str("\n")?;
+                return get_first_thread_msg_content(oac, thread_id).await;
+            },
+            RunStatus::Queued | RunStatus::InProgress => (),
+            other => {
+                term.write_str("\n")?;
+                return Err(format!("ERROR WHILE RUN: {:?}", other).into());
+            }
+        }
+
+        sleep(Duration::from_millis(POLLING_DURATION_MSG)).await;
+    }
+
+    todo!()
+}
+
+pub async fn get_first_thread_msg_content(oac: &OaClient, thread_id: &ThreadId) -> Result<String> {
+    static QUERY: [(&str, &str); 1] = [("limit", "1")];
+
+    let messages = oac.threads().messages(thread_id).list(&QUERY).await?;
+    let msg = messages
+        .data
+        .into_iter()
+        .next()
+        .ok_or_else(|| "No message found".to_string())?;
+
+    let text = get_text_content(msg)?;
+
+    Ok(text)
+}
 // endregion: --- Thread

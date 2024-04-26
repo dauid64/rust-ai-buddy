@@ -1,6 +1,7 @@
 // region: --- Modules
 
 pub mod asst;
+pub mod msg;
 
 use async_openai::{config::OpenAIConfig, Client};
 
