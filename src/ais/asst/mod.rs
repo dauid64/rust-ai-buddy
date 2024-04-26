@@ -1,4 +1,7 @@
-use async_openai::types::{AssistantObject, AssistantToolsRetrieval, CreateAssistantRequest, ModifyAssistantRequest};
+use async_openai::types::{
+    AssistantObject, AssistantToolsRetrieval, CreateAssistantRequest, CreateThreadRequest,
+    ModifyAssistantRequest, ThreadObject,
+};
 use derive_more::{Deref, Display, From};
 
 use crate::Result;
@@ -46,7 +49,11 @@ pub async fn create(oac: &OaClient, config: CreateConfig) -> Result<AsstId> {
     Ok(asst_obj.id.into())
 }
 
-pub async fn load_or_create_asst(oac: &OaClient, config: CreateConfig, recreate: bool) -> Result<AsstId> {
+pub async fn load_or_create_asst(
+    oac: &OaClient,
+    config: CreateConfig,
+    recreate: bool,
+) -> Result<AsstId> {
     let asst_obj = first_by_name(oac, &config.name).await?;
     let mut asst_id = asst_obj.map(|o| AsstId::from(o.id));
 
@@ -78,7 +85,11 @@ pub async fn first_by_name(oac: &OaClient, name: &str) -> Result<Option<Assistan
     Ok(asst_obj)
 }
 
-pub async fn upload_instructions(oac: &OaClient, asst_id: &AsstId, inst_contet: String) -> Result<()> {
+pub async fn upload_instructions(
+    oac: &OaClient,
+    asst_id: &AsstId,
+    inst_contet: String,
+) -> Result<()> {
     let oa_assts = oac.assistants();
     let modif = ModifyAssistantRequest {
         instructions: Some(inst_contet),
@@ -98,3 +109,27 @@ pub async fn delete(oac: &OaClient, asst_id: &AsstId) -> Result<()> {
     Ok(())
 }
 // endregion: --- Asst CRUD
+
+// region --- Thread
+
+pub async fn create_thread(oac: &OaClient) -> Result<ThreadId> {
+    let oa_threads = oac.threads();
+
+    let res = oa_threads
+        .create(CreateThreadRequest {
+            ..Default::default()
+        })
+        .await?;
+
+    Ok(res.id.into())
+}
+
+pub async fn get_thread(oac: &OaClient, thread_id: &ThreadId) -> Result<ThreadObject> {
+    let oa_threads = oac.threads();
+
+    let thread_obj = oa_threads.retrieve(thread_id).await?;
+
+    Ok(thread_obj)
+}
+
+// endregion: --- Thread
