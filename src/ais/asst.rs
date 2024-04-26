@@ -154,20 +154,18 @@ pub async fn run_thread_msg(oac: &OaClient, asst_id: &AsstId, thread_id: &Thread
         term.write_str("< ")?;
         match run.status {
             RunStatus::Completed => {
-                term.write_str("\n")?;
-                return get_first_thread_msg_content(oac, thread_id).await;
-            },
+				term.write_str("\n")?;
+				return get_first_thread_msg_content(oac, thread_id).await;
+			}
             RunStatus::Queued | RunStatus::InProgress => (),
-            other => {
-                term.write_str("\n")?;
-                return Err(format!("ERROR WHILE RUN: {:?}", other).into());
-            }
+			other => {
+				term.write_str("\n")?;
+				return Err(format!("ERROR WHILE RUN: {:?}", other).into());
+			}
         }
 
         sleep(Duration::from_millis(POLLING_DURATION_MSG)).await;
     }
-
-    todo!()
 }
 
 pub async fn get_first_thread_msg_content(oac: &OaClient, thread_id: &ThreadId) -> Result<String> {

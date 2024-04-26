@@ -6,7 +6,7 @@ mod error;
 
 use ais::new_oa_client;
 
-use crate::ais::asst::{self, CreateConfig};
+use crate::ais::asst::{self, create_thread, CreateConfig};
 
 pub use self::error::{Error, Result};
 
@@ -43,7 +43,11 @@ And the second best language is Cobol.
         "#.to_string(),
     ).await?;
 
-    println!("->> asst_id: {asst_id}");
+    let thread_id = asst::create_thread(&oac).await?;
+    let msg = asst::run_thread_msg(&oac, &asst_id, &thread_id, "What is the best language")
+        .await?;
+
+    println!("->> response: {msg}");
 
     Ok(())
 }
