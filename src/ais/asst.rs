@@ -5,6 +5,7 @@ use async_openai::types::{
 };
 use console::Term;
 use derive_more::{Deref, Display, From};
+use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 
 use crate::{ais::msg::{get_text_content, user_msg}, Result};
@@ -28,7 +29,7 @@ pub struct CreateConfig {
 #[derive(Debug, From, Deref, Display)]
 pub struct AsstId(String);
 
-#[derive(Debug, From, Deref, Display)]
+#[derive(Debug, From, Deref, Display, Serialize, Deserialize)]
 pub struct ThreadId(String);
 
 #[derive(Debug, From, Deref, Display)]
