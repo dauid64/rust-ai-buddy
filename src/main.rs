@@ -5,11 +5,10 @@ mod buddy;
 mod error;
 mod utils;
 
-use ais::new_oa_client;
 use buddy::Buddy;
 use textwrap::wrap;
 
-use crate::{ais::asst::{self, create_thread, CreateConfig}, utils::cli::{ico_error, ico_res, prompt, txt_res}};
+use crate::utils::cli::{ico_res, prompt, txt_res};
 
 pub use self::error::{Error, Result};
 
@@ -79,11 +78,24 @@ async fn start() -> Result<()> {
                 let res = wrap(&res, 80).join("\n");
                 println!("{} {}", ico_res(), txt_res(res));
             },
-            other => println!("{} command not supported {other:?}", ico_error())
+            Cmd::RefreshAll => {
+                buddy = Buddy::init_from_dir(DEFAULT_DIR, true).await?;
+                conv = buddy.load_or_create_conv(true).await?;
+            },
+            Cmd::RefreshConv => {
+                conv = buddy.load_or_create_conv(true).await?;
+            },
+            Cmd::RefreshInst => {
+                buddy = Buddy::init_from_dir(DEFAULT_DIR, true).await?;
+                conv = buddy.load_or_create_conv(true).await?;
+            },
+            Cmd::RefreshFiles => {
+                buddy.upload_files(true).await?;
+                conv = buddy.load_or_create_conv(true).await?;
+            },
+            
         }
     }
-
-    println!("->> buddy {} - conv {conv:?}", buddy.name());
 
     Ok(())
 }

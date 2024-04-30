@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, fmt::format, fs::File, hash::Hash, os::unix::thread, path::Path, thread::Thread, time::Duration};
+use std::{collections::{HashMap, HashSet}, path::Path, time::Duration};
 
 use async_openai::types::{
     AssistantObject, AssistantToolsRetrieval, CreateAssistantFileRequest, CreateAssistantRequest, CreateFileRequest, CreateRunRequest, CreateThreadRequest, ModifyAssistantRequest, RunStatus, ThreadObject
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 
 use crate::{
-    ais::{asst, msg::{get_text_content, user_msg}},
+    ais::msg::{get_text_content, user_msg},
     utils::{cli::{ico_check, ico_deleted_ok, ico_error, ico_uploaded, ico_uploading}, files::XFile},
     Result,
 };
@@ -265,7 +265,7 @@ pub async fn upload_file_by_name(oac: &OaClient, asst_id: &AsstId, file: &Path, 
 
         // -- Delete the asst_file association
         let oa_assts = oac.assistants();
-        let oa_assts_files = oa_assts.files(&asst_id);
+        let oa_assts_files = oa_assts.files(asst_id);
         if let Err(err) = oa_assts_files.delete(&file_id).await {
             println!(
                 "{} Can't remove assistant file '{}'\n cause: {}",
@@ -286,12 +286,14 @@ pub async fn upload_file_by_name(oac: &OaClient, asst_id: &AsstId, file: &Path, 
 
     // Upload file.
     let oa_files = oac.files();
+
     let oa_file = oa_files
         .create(CreateFileRequest {
             file: file.into(),
-            purpose: "assistants".into()
+            purpose: "assistants".into(),
         })
         .await?;
+
 
     // Update print.
     term.clear_last_lines(1)?;
@@ -300,15 +302,15 @@ pub async fn upload_file_by_name(oac: &OaClient, asst_id: &AsstId, file: &Path, 
         ico_uploaded(),
         file.x_file_name(),
     ))?;
-
+    
     // Attach file to assistant.
     let oa_assts = oac.assistants();
     let oa_assts_files = oa_assts.files(asst_id);
     let asst_file_obj = oa_assts_files
-        .create(CreateAssistantFileRequest {
-            file_id: oa_file.id.clone(),
-        })
-        .await?;
+		.create(CreateAssistantFileRequest {
+			file_id: oa_file.id.clone(),
+		})
+		.await?;
 
     // -- Assert warning.
     if oa_file.id != asst_file_obj.id {

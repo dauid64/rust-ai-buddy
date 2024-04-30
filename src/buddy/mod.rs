@@ -2,7 +2,6 @@
 
 mod config;
 
-use core::num;
 use std::{fs, path::{Path, PathBuf}};
 
 use derive_more::{Deref, From};
@@ -100,7 +99,6 @@ impl Buddy{
         // -- Generate and upload the .buddy/files bundle files.
         for bundle in self.config.file_bundles.iter() {
             let src_dir = self.dir.join(&bundle.src_dir);
-
             if src_dir.is_dir() {
                 let src_globs: Vec<&str> =
                     bundle.src_globs.iter().map(AsRef::as_ref).collect();
