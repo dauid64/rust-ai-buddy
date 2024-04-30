@@ -3,6 +3,7 @@
 mod ais;
 mod buddy;
 mod error;
+mod utils;
 
 use ais::new_oa_client;
 

@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use derive_more::{Deref, From};
 use serde::{Deserialize, Serialize};
 
-use crate::{ais::{asst::{AsstId, ThreadId}, OaClient}, Result};
+use crate::{ais::{asst::{AsstId, ThreadId}, OaClient}, utils::files::ensure_dir, Result};
 
 use self::config::Config;
 
@@ -35,13 +35,13 @@ impl Buddy{}
 impl Buddy{
     fn data_dir(&self) -> Result<PathBuf> {
         let data_dir = self.dir.join(".buddy");
-        // ensure_dir(&data_dir)?; // FIXME
+        ensure_dir(&data_dir)?;
         Ok(data_dir)
     }
 
     fn data_files_dir(&self) -> Result<PathBuf> {
         let dir = self.data_dir()?.join("files");
-        // ensure_dir(&dir)?; // FIXME
+        ensure_dir(&dir)?;
         Ok(dir)
     }
 }
