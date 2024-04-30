@@ -1,7 +1,5 @@
 use std::{
-    fs::{self, File},
-    io::{BufRead as _, BufReader, BufWriter, Write},
-    path::{Path, PathBuf},
+    ffi::OsStr, fs::{self, File}, io::{BufRead as _, BufReader, BufWriter, Write}, path::{Path, PathBuf}
 };
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
@@ -161,3 +159,24 @@ fn get_reader(file: &Path) -> Result<BufReader<File>> {
 }
 
 // endregion: --- File Utils
+
+// region --- XFile
+
+/// Trait that has methods that returns
+/// the `&str` when ok, and when none or err, returns ""
+pub trait XFile {
+    fn x_file_name(&self) -> &str;
+    fn x_extension(&self) -> &str;
+}
+
+impl XFile for Path {
+    fn x_file_name(&self) -> &str {
+        self.file_name().and_then(OsStr::to_str).unwrap_or("")
+    }
+
+    fn x_extension(&self) -> &str {
+        self.extension().and_then(OsStr::to_str).unwrap_or("")
+    }
+}
+
+// endregion: --- XFile
