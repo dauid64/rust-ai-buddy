@@ -8,7 +8,7 @@ use derive_more::{Deref, Display, From};
 use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 
-use crate::{ais::msg::{get_text_content, user_msg}, Result};
+use crate::{ais::msg::{get_text_content, user_msg}, utils::cli::{ico_check, ico_deleted_ok}, Result};
 
 use super::OaClient;
 
@@ -66,15 +66,17 @@ pub async fn load_or_create_asst(
     if let (true, Some(asst_id_ref)) = (recreate, asst_id.as_ref()) {
         delete(oac, asst_id_ref).await?;
         asst_id.take();
-        println!("Assistant {} deleted", config.name);
+        println!("{} Assistant {} deleted", ico_deleted_ok(), config.name);
     }
 
     // -- Create if needed
     if let Some(asst_id) = asst_id {
-        println!("Assistant {} loaded", config.name);
+        println!("{} Assistant {} loaded", ico_check(), config.name);
         Ok(asst_id)
     } else {
+        let asst_name = config.name.clone();
         let asst_id = create(oac, config).await?;
+        println!("{} Assistant {} created", ico_check(), asst_name);
         Ok(asst_id)
     }
 }
