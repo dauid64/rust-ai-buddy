@@ -5,7 +5,7 @@ pub mod msg;
 
 use async_openai::{config::OpenAIConfig, Client};
 
-use crate::Result;
+use crate::{config, Result};
 
 
 // endregion: --- Modules
@@ -17,7 +17,8 @@ const ENV_OPENAI_API_KEY: &str = "OPENAI_API_KEY";
 pub type OaClient = Client<OpenAIConfig>;
 
 pub fn new_oa_client() -> Result<OaClient> {
-    if std::env::var(ENV_OPENAI_API_KEY).is_ok() {
+    let openai_api_key = &config::config().openai_api_key;
+    if !openai_api_key.is_empty() {
         Ok(Client::new())
     } else {
         println!("No {ENV_OPENAI_API_KEY} env variable. Please set it.");

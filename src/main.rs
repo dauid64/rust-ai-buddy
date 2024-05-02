@@ -4,6 +4,7 @@ mod ais;
 mod buddy;
 mod error;
 mod utils;
+mod config;
 
 use buddy::Buddy;
 use textwrap::wrap;
